@@ -1,0 +1,31 @@
+version: "3.9"
+
+# Phase 1 only needs Mongo. Redis is included now (commented) so the shape of
+# local infra matches architecture.md ahead of Phase 2's caching layer.
+services:
+  mongo:
+    image: mongo:7
+    container_name: mock-api-engine-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: mock-api-engine-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+
+volumes:
+  mongo-data:
+  # redis-data:

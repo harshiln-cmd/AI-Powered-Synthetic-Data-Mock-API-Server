@@ -1,0 +1,11 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+allowBuilds:
+  esbuild: true
+
+# tsx depends on esbuild's native binary postinstall step; explicitly
+# allow it so `pnpm install` doesn't need an interactive prompt.
+onlyBuiltDependencies:
+  - esbuild

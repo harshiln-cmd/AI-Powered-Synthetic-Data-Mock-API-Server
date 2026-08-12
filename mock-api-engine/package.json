@@ -1,0 +1,21 @@
+{
+  "name": "mock-api-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-Powered Synthetic Data & Mock API Server — monorepo root",
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev:api": "pnpm --filter @mock-api-engine/api dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "@types/node": "26.2.0"
+  }
+}

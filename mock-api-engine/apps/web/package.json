@@ -1,0 +1,9 @@
+{
+  "name": "@mock-api-engine/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "React dashboard — scaffolded as a workspace member ahead of Phase 3. No implementation yet.",
+  "scripts": {
+    "dev": "echo \"apps/web has no implementation yet — this is Phase 3 (see phases.md)\" && exit 1"
+  }
+}
