@@ -52,3 +52,23 @@ export interface ApiConfigInput {
   httpMethod: HttpMethod;
   jsonSchema: EndpointJsonSchema;
 }
+
+/**
+ * The wire shape of an ApiConfig as returned by the API — distinct from
+ * apps/api's IApiConfig (a Mongoose Document) because Document doesn't exist
+ * in a browser, and because what actually crosses the JSON wire isn't quite
+ * what you'd guess: confirmed against a real Mongoose document that the
+ * default JSON output uses `_id` (not the `id` virtual, which isn't
+ * included unless you opt in), and Dates serialize to ISO strings, not Date
+ * objects. This type mirrors that exactly rather than the Mongoose-side
+ * shape.
+ */
+export interface ApiConfigDto {
+  _id: string;
+  endpointName: string;
+  httpMethod: HttpMethod;
+  jsonSchema: EndpointJsonSchema;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

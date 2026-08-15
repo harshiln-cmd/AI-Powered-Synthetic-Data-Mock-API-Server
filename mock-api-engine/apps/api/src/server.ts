@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import Fastify, { type FastifyInstance } from 'fastify';
+import cors from '@fastify/cors';
 import { connectToDatabase } from './services/database.service';
 import { connectToCache } from './services/cache.service';
 import { loadRoutesFromDatabase } from './services/route-loader.service';
@@ -9,6 +10,11 @@ import { healthRoutes } from './routes/health.routes';
 
 const PORT = Number(process.env.PORT ?? 4000);
 const HOST = '0.0.0.0';
+// The Phase 3 dashboard (apps/web) calls this API directly cross-origin —
+// http://localhost:5173 is Vite's default dev port. Without CORS, every
+// fetch() from the browser would be silently blocked regardless of how
+// correct the request itself is. Comma-separated for multiple origins.
+const CORS_ORIGINS = (process.env.CORS_ORIGIN ?? 'http://localhost:5173').split(',').map((origin) => origin.trim());
 
 async function buildServer(): Promise<FastifyInstance> {
   const fastify = Fastify({
@@ -18,6 +24,7 @@ async function buildServer(): Promise<FastifyInstance> {
     },
   });
 
+  await fastify.register(cors, { origin: CORS_ORIGINS });
   await fastify.register(healthRoutes);
   await fastify.register(adminRoutes);
   await fastify.register(mockRoutes);

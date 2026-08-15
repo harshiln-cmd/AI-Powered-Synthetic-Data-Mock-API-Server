@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev:api": "pnpm --filter @mock-api-engine/api dev",
+    "dev:web": "pnpm --filter @mock-api-engine/web dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",

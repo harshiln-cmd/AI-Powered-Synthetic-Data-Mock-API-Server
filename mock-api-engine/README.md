@@ -12,7 +12,9 @@ AI-Powered Synthetic Data & Mock API Server. See `prd.md` / `architecture.md` / 
 - [x] Faker-based local fallback on any AI failure (rules.md mandatory fallback), flagged via `X-Mock-Fallback: True`
 - [x] Token Budget Guard via `max_completion_tokens`
 
-Not in scope yet: the dashboard UI and the CI/CD/test pipeline (Phases 3–4).
+**Phase 3 — Dashboard & Schema Management:** step 1-4 done (frontend init, design system, layout/routing, endpoint manager). Not done: drag-and-drop OpenAPI uploader, request log inspector, API key/rate-limit controls.
+
+Not in scope yet: the CI/CD/test pipeline (Phase 4).
 
 ## Prerequisites
 
@@ -25,9 +27,11 @@ Not in scope yet: the dashboard UI and the CI/CD/test pipeline (Phases 3–4).
 
 ```bash
 pnpm install
-cp .env.example apps/api/.env   # then fill in OPENAI_API_KEY
+cp .env.example apps/api/.env      # then fill in OPENAI_API_KEY
+cp apps/web/.env.example apps/web/.env
 docker compose up -d
-pnpm dev:api
+pnpm dev:api    # http://localhost:4000
+pnpm dev:web    # http://localhost:5173 (run in a second terminal)
 ```
 
 The API starts on `http://localhost:4000`.

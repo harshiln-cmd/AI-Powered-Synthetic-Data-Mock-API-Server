@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+/* Inter: 400 (Body/Regular), 500 (H2/Medium), 600 (H1/SemiBold) — the three
+   weights design.md's type scale actually calls for. Latin subset only
+   (verified this path exists in the installed package) — the barrel import
+   pulls in cyrillic/greek/vietnamese subsets this app has no use for. */
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
+@import "@fontsource/inter/latin-600.css";
+@import "@fontsource/jetbrains-mono/latin-400.css";
+
+/*
+ * Design tokens, translated 1:1 from design.md. Each color below is named
+ * for its ROLE (canvas/panel/brand/ink...) rather than mirroring
+ * design.md's literal labels, so components read semantically
+ * (`bg-panel`, `text-ink-muted`) instead of restating "background
+ * secondary" — but every value is traceable back to design.md via the
+ * comments. Worth knowing: design.md's own values are exact Tailwind
+ * defaults (slate-900/800/400/50, indigo-500, cyan-500, emerald-500,
+ * amber-500, rose-500) — not a coincidence I'm inventing, just confirming
+ * the source palette IS Tailwind's stock scale at those steps.
+ */
+@theme {
+  /* Background Primary (#0F172A) / Background Secondary, Cards (#1E293B) */
+  --color-canvas: #0F172A;
+  --color-panel: #1E293B;
+  /* Not specified in design.md. Same Tailwind slate ramp as the two colors
+     above (slate-700) — sits between panel and content for a border that's
+     visible but never louder than the surfaces it separates. */
+  --color-border: #334155;
+
+  /* Primary Brand Accent — Electric Violet / Secondary Brand Accent — Cyan */
+  --color-brand: #6366F1;
+  --color-accent: #06B6D4;
+
+  /* Text Primary / Text Secondary */
+  --color-ink: #F8FAFC;
+  --color-ink-muted: #94A3B8;
+
+  /* Status: Success/Active, Warning/Fallback, Error/Failure */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #F43F5E;
+
+  /* Primary UI Font / Monospace Font (Code & JSON Payloads) */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+  /* H1 (2.25rem/36px), H2 (1.5rem/24px), and Body (0.875rem/14px) all land
+     exactly on Tailwind's default text-4xl / text-2xl / text-sm — only
+     Code Snippets (0.8125rem/13px) needs a token of its own. */
+  --text-code: 0.8125rem;
+}
+
+@layer base {
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+  }
+
+  ::selection {
+    @apply bg-brand/30 text-ink;
+  }
+
+  /* Thin, dark-aware scrollbar — default OS scrollbars read jarringly light
+     against this palette. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 9999px;
+  }
+}
+
+@layer utilities {
+  /* Used for the "active" status dot on endpoint rows — a real state signal,
+     not decoration, so it respects reduced-motion. */
+  @keyframes pulse-ring {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .animate-pulse-ring {
+    animation: pulse-ring 2s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pulse-ring {
+      animation: none;
+    }
+  }
+}
