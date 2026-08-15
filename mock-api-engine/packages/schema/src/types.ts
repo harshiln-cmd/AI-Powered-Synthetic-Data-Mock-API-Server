@@ -33,13 +33,17 @@ export interface JsonSchemaDefinition {
 }
 
 /**
- * The full validation contract stored per-endpoint. `body` and `query` are
- * both optional since a GET-style mock may only need query validation, and a
- * DELETE-by-id style mock may need neither.
+ * The full validation/generation contract stored per-endpoint.
+ * - `body` / `query`: validate what the CLIENT sends (Phase 1, unchanged).
+ * - `response`: describes the shape of the payload the mock server should
+ *   generate and return (Phase 2). Kept separate from `body`/`query`
+ *   because a request schema and a response schema are different concerns
+ *   — e.g. a GET has no body to validate but still needs a response shape.
  */
 export interface EndpointJsonSchema {
   body?: JsonSchemaDefinition;
   query?: JsonSchemaDefinition;
+  response?: JsonSchemaDefinition;
 }
 
 /** Shape of the payload accepted by POST /admin/endpoints. */

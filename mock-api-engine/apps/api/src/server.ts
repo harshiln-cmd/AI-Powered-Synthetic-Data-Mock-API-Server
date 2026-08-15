@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { connectToDatabase } from './services/database.service';
+import { connectToCache } from './services/cache.service';
 import { loadRoutesFromDatabase } from './services/route-loader.service';
 import { adminRoutes } from './routes/admin.routes';
 import { mockRoutes } from './routes/mock.routes';
@@ -26,6 +27,7 @@ async function buildServer(): Promise<FastifyInstance> {
 
 async function start(): Promise<void> {
   await connectToDatabase();
+  await connectToCache(); // non-fatal if Redis is unreachable — see cache.service.ts
 
   const loadedCount = await loadRoutesFromDatabase();
   // eslint-disable-next-line no-console

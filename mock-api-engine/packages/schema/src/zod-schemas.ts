@@ -27,6 +27,7 @@ export const JsonSchemaDefinitionSchema: z.ZodType<JsonSchemaDefinition> = z.laz
 export const EndpointJsonSchemaSchema = z.object({
   body: JsonSchemaDefinitionSchema.optional(),
   query: JsonSchemaDefinitionSchema.optional(),
+  response: JsonSchemaDefinitionSchema.optional(),
 });
 
 /** Validates the body of POST /admin/endpoints. */
