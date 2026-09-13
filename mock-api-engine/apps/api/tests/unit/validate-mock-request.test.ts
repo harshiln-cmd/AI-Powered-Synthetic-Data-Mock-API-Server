@@ -116,6 +116,34 @@ describe('validateMockRequest', () => {
     expect(request.mockConfig).toEqual(activeConfig({ jsonSchema: {} }));
   });
 
+  it('falls back to the root path when the wildcard param is entirely absent', async () => {
+    lookupRoute.mockReturnValue(undefined);
+    // No '*' key at all, unlike fakeRequest()'s default — exercises the
+    // `params['*'] ?? ''` fallback in extractEndpointName, not just a
+    // present-but-already-matching value.
+    const request = { method: 'GET', params: {}, body: undefined, query: {}, mockConfig: undefined } as unknown as FastifyRequest;
+
+    await validateMockRequest(request, fakeReply());
+
+    expect(lookupRoute).toHaveBeenCalledWith('GET', '/');
+  });
+
+  it('treats a config with no jsonSchema field at all as having no body/query rules to check', async () => {
+    // Distinct from the "jsonSchema: {}" case above — this exercises the
+    // `config.jsonSchema ?? {}` fallback itself, for a config object that
+    // omits the field entirely.
+    const config = activeConfig();
+    delete (config as { jsonSchema?: unknown }).jsonSchema;
+    lookupRoute.mockReturnValue(config);
+    const request = fakeRequest({});
+    const reply = fakeReply();
+
+    await validateMockRequest(request, reply);
+
+    expect(reply.send).not.toHaveBeenCalled();
+    expect(request.mockConfig).toBe(config);
+  });
+
   describe('body validation', () => {
     const bodySchema = {
       type: 'object' as const,

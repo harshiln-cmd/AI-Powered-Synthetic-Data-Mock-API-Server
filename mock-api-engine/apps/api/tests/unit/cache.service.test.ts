@@ -42,10 +42,19 @@ import {
   FALLBACK_TTL_SECONDS,
 } from '../../src/services/cache.service';
 
+// redisClient.on('error', handler) runs exactly once, at module load time —
+// i.e. right now, as the import above executes. It must be captured here,
+// before any beforeEach's vi.clearAllMocks() runs (that call would wipe
+// mockRedisInstance.on's recorded call history, since clearAllMocks clears
+// every mock's state regardless of when it was called).
+const registeredErrorHandler = mockRedisInstance.on.mock.calls.find(([eventName]) => eventName === 'error')?.[1] as
+  | ((error: Error) => void)
+  | undefined;
+
 /** Mirrors the private `hashPayload()` in cache.service.ts so tests can
  * assert on the exact cache key without exporting an internal helper. */
 function expectedHash(payload: unknown): string {
-  return createHash('sha256').update(JSON.stringify(payload ?? {})).digest('hex').slice(0, 16);
+  return createHash('sha256').update(JSON.stringify(payload)).digest('hex').slice(0, 16);
 }
 
 // cache.service.ts reads this once at import time — reading it the same way
@@ -215,6 +224,19 @@ describe('cache.service', () => {
       expect(errorSpy).toHaveBeenCalled();
 
       errorSpy.mockRestore();
+    });
+  });
+
+  describe('redis client error handler', () => {
+    it('logs a message when the underlying redis client emits an error event', () => {
+      expect(registeredErrorHandler).toBeDefined();
+
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      registeredErrorHandler?.(new Error('ECONNREFUSED'));
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[cache] redis client error:', 'ECONNREFUSED');
+      consoleErrorSpy.mockRestore();
     });
   });
 });
