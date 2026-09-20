@@ -1,9 +1,3 @@
-/**
- * These are plain TypeScript types (no Zod) so they can be imported by any
- * package — including the future React dashboard in Phase 3 — without
- * pulling Zod into a bundle that doesn't need runtime validation.
- */
-
 export const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 export type HttpMethod = (typeof HTTP_METHODS)[number];
 
@@ -12,12 +6,6 @@ export type JsonSchemaPrimitive = 'string' | 'number' | 'integer' | 'boolean' | 
 export const STRING_FORMATS = ['email', 'uuid', 'date-time', 'uri'] as const;
 export type StringFormat = (typeof STRING_FORMATS)[number];
 
-/**
- * A deliberately small subset of JSON Schema. It covers the shapes we need
- * for mock request validation (Phase 1) without dragging in a full JSON
- * Schema implementation. `enum` is currently only honored for `type: "string"`
- * — see json-schema-to-zod.ts.
- */
 export interface JsonSchemaDefinition {
   type: JsonSchemaPrimitive;
   properties?: Record<string, JsonSchemaDefinition>;
@@ -32,37 +20,18 @@ export interface JsonSchemaDefinition {
   description?: string;
 }
 
-/**
- * The full validation/generation contract stored per-endpoint.
- * - `body` / `query`: validate what the CLIENT sends (Phase 1, unchanged).
- * - `response`: describes the shape of the payload the mock server should
- *   generate and return (Phase 2). Kept separate from `body`/`query`
- *   because a request schema and a response schema are different concerns
- *   — e.g. a GET has no body to validate but still needs a response shape.
- */
 export interface EndpointJsonSchema {
   body?: JsonSchemaDefinition;
   query?: JsonSchemaDefinition;
   response?: JsonSchemaDefinition;
 }
 
-/** Shape of the payload accepted by POST /admin/endpoints. */
 export interface ApiConfigInput {
   endpointName: string;
   httpMethod: HttpMethod;
   jsonSchema: EndpointJsonSchema;
 }
 
-/**
- * The wire shape of an ApiConfig as returned by the API — distinct from
- * apps/api's IApiConfig (a Mongoose Document) because Document doesn't exist
- * in a browser, and because what actually crosses the JSON wire isn't quite
- * what you'd guess: confirmed against a real Mongoose document that the
- * default JSON output uses `_id` (not the `id` virtual, which isn't
- * included unless you opt in), and Dates serialize to ISO strings, not Date
- * objects. This type mirrors that exactly rather than the Mongoose-side
- * shape.
- */
 export interface ApiConfigDto {
   _id: string;
   endpointName: string;
@@ -71,4 +40,67 @@ export interface ApiConfigDto {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+// --- Phase 5: API Gateway (rate limiting + key management) ---
+
+export const API_KEY_TIERS = ['free', 'pro'] as const;
+export type ApiKeyTier = (typeof API_KEY_TIERS)[number];
+
+/**
+ * Per-minute throttle, enforced by the rate-limit middleware via Redis.
+ * Guards against short bursts hitting the (expensive) AI generation path.
+ */
+export const TIER_RATE_LIMIT_PER_MINUTE: Record<ApiKeyTier, number> = {
+  free: 50,
+  pro: 1000,
+};
+
+/**
+ * A separate concept from the per-minute throttle above: the dashboard's
+ * "used vs. monthly limit" progress bar tracks usage against a plan's
+ * included monthly volume, not the burst-protection rate limit. Real API
+ * products distinguish these (e.g. "1000 req/min, 100k req/month included")
+ * — the brief didn't specify monthly numbers, so these are reasonable,
+ * clearly-labeled round numbers rather than a derived multiple of the
+ * per-minute limit, which would produce awkward multi-million figures.
+ */
+export const TIER_MONTHLY_QUOTA: Record<ApiKeyTier, number> = {
+  free: 10_000,
+  pro: 250_000,
+};
+
+export interface ApiKeyInput {
+  tier?: ApiKeyTier;
+}
+
+/**
+ * Returned ONLY once, from the create-key endpoint's response — the one
+ * moment the server ever has the plaintext key. It is never stored in
+ * reversible form and can never be fetched again afterward.
+ */
+export interface ApiKeyCreatedDto {
+  apiKey: string;
+  keyPrefix: string;
+  tier: ApiKeyTier;
+  createdAt: string;
+}
+
+/** Wire shape for anything that isn't the one-time creation response — never carries the plaintext key. */
+export interface ApiKeyDto {
+  _id: string;
+  keyPrefix: string;
+  tier: ApiKeyTier;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiKeyUsageDto {
+  tier: ApiKeyTier;
+  used: number;
+  limit: number;
+  remaining: number;
+  /** ISO timestamp for the start of next month, when the monthly counter resets. */
+  periodResetsAt: string;
 }

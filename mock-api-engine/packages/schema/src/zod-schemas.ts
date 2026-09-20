@@ -1,13 +1,8 @@
 import { z } from 'zod';
-import { HTTP_METHODS, STRING_FORMATS, type JsonSchemaDefinition } from './types';
+import { HTTP_METHODS, STRING_FORMATS, API_KEY_TIERS, type JsonSchemaDefinition } from './types';
 
 export const HttpMethodSchema = z.enum(HTTP_METHODS);
 
-/**
- * Recursive Zod schema mirroring JsonSchemaDefinition. Recursive shapes need
- * `z.lazy()` plus an explicit `z.ZodType<T>` annotation — Zod/TS can't infer
- * the recursive type on their own.
- */
 export const JsonSchemaDefinitionSchema: z.ZodType<JsonSchemaDefinition> = z.lazy(() =>
   z.object({
     type: z.enum(['string', 'number', 'integer', 'boolean', 'array', 'object']),
@@ -30,7 +25,6 @@ export const EndpointJsonSchemaSchema = z.object({
   response: JsonSchemaDefinitionSchema.optional(),
 });
 
-/** Validates the body of POST /admin/endpoints. */
 export const CreateEndpointConfigSchema = z.object({
   endpointName: z
     .string()
@@ -41,3 +35,11 @@ export const CreateEndpointConfigSchema = z.object({
 });
 
 export type CreateEndpointConfigInput = z.infer<typeof CreateEndpointConfigSchema>;
+
+// --- Phase 5: API Gateway ---
+
+export const CreateApiKeySchema = z.object({
+  tier: z.enum(API_KEY_TIERS).optional().default('free'),
+});
+
+export type CreateApiKeyInput = z.infer<typeof CreateApiKeySchema>;

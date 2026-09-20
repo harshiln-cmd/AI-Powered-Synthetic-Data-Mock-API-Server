@@ -1,4 +1,4 @@
-import { Braces, Route, ScrollText } from 'lucide-react';
+import { Braces, Route, ScrollText, Key } from 'lucide-react';
 import { NavLink } from 'react-router';
 import type { ComponentType } from 'react';
 
@@ -11,6 +11,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: '/endpoints', label: 'Endpoints', icon: Route },
   { to: '/logs', label: 'Logs', icon: ScrollText },
+  { to: '/gateway', label: 'API Gateway', icon: Key },
 ];
 
 export function Sidebar() {
@@ -25,39 +26,25 @@ export function Sidebar() {
           <p className="mt-1 text-xs leading-none text-ink-muted">Synthetic Data Engine</p>
         </div>
       </div>
-
       <nav className="flex flex-1 flex-col gap-1 px-3">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
-              [
-                'group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-brand/12 text-brand'
-                  : 'text-ink-muted hover:bg-panel hover:text-ink',
-              ].join(' ')
+              ['group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                isActive ? 'bg-brand/12 text-brand' : 'text-ink-muted hover:bg-panel hover:text-ink'].join(' ')
             }
           >
             {({ isActive }) => (
               <>
-                <Icon
-                  size={17}
-                  className={isActive ? 'text-brand' : 'text-ink-muted group-hover:text-ink'}
-                />
+                <Icon size={17} className={isActive ? 'text-brand' : 'text-ink-muted group-hover:text-ink'} />
                 {label}
               </>
             )}
           </NavLink>
         ))}
       </nav>
-
-      <div className="border-t border-border px-5 py-4">
-        <p className="text-xs text-ink-muted">
-          Phase 3 <span className="text-border">·</span> Dashboard
-        </p>
-      </div>
     </aside>
   );
 }
